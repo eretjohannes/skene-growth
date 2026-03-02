@@ -186,13 +186,15 @@ def _load_single_result(
             metadata = json.load(f)
 
         for step_data in metadata.get("steps", []):
-            steps.append(StepMetadata(
-                step_name=step_data["step_name"],
-                exit_code=step_data["exit_code"],
-                duration_seconds=step_data["duration_seconds"],
-                command=step_data.get("command", []),
-                success=step_data["success"],
-            ))
+            steps.append(
+                StepMetadata(
+                    step_name=step_data["step_name"],
+                    exit_code=step_data["exit_code"],
+                    duration_seconds=step_data["duration_seconds"],
+                    command=step_data.get("command", []),
+                    success=step_data["success"],
+                )
+            )
 
             # Extract provider and model_id from the command args
             cmd = step_data.get("command", [])

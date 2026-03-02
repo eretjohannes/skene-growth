@@ -19,12 +19,19 @@ def _build_analyze_command(
 ) -> list[str]:
     """Build the CLI command for the analyze step."""
     return [
-        "uv", "run", "skene-growth", "analyze",
+        "uv",
+        "run",
+        "skene-growth",
+        "analyze",
         str(codebase_path),
-        "--provider", provider,
-        "--model", model,
-        "--api-key", api_key,
-        "--output", str(output_dir),
+        "--provider",
+        provider,
+        "--model",
+        model,
+        "--api-key",
+        api_key,
+        "--output",
+        str(output_dir),
         "--no-fallback",
         "--debug",
     ]
@@ -39,12 +46,20 @@ def _build_plan_command(
 ) -> list[str]:
     """Build the CLI command for the plan step."""
     return [
-        "uv", "run", "skene-growth", "plan",
-        "--context", str(context_dir),
-        "--provider", provider,
-        "--model", model,
-        "--api-key", api_key,
-        "--output", str(output_file),
+        "uv",
+        "run",
+        "skene-growth",
+        "plan",
+        "--context",
+        str(context_dir),
+        "--provider",
+        provider,
+        "--model",
+        model,
+        "--api-key",
+        api_key,
+        "--output",
+        str(output_file),
         "--no-fallback",
         "--debug",
     ]
@@ -58,12 +73,20 @@ def _build_build_command(
 ) -> list[str]:
     """Build the CLI command for the build step."""
     return [
-        "uv", "run", "skene-growth", "build",
-        "--context", str(context_dir),
-        "--provider", provider,
-        "--model", model,
-        "--api-key", api_key,
-        "--target", "file",
+        "uv",
+        "run",
+        "skene-growth",
+        "build",
+        "--context",
+        str(context_dir),
+        "--provider",
+        provider,
+        "--model",
+        model,
+        "--api-key",
+        api_key,
+        "--target",
+        "file",
         "--no-fallback",
         "--debug",
     ]

@@ -60,29 +60,32 @@ def _check_tech_stack(manifest_data: dict, ground_truth: GroundTruth) -> list[Fa
 
         actual = manifest_stack.get(field) or ""
         passed = _matches(expected, actual)
-        checks.append(FactualCheck(
-            check_name=f"tech_stack:{field}",
-            category="tech_stack",
-            passed=passed,
-            expected=expected,
-            actual=actual,
-            detail=f"{'Match' if passed else 'Mismatch'}: expected '{expected}', got '{actual}'",
-        ))
+        checks.append(
+            FactualCheck(
+                check_name=f"tech_stack:{field}",
+                category="tech_stack",
+                passed=passed,
+                expected=expected,
+                actual=actual,
+                detail=f"{'Match' if passed else 'Mismatch'}: expected '{expected}', got '{actual}'",
+            )
+        )
 
     # Check services (recall: how many expected services were detected?)
     if gt_stack.services:
         manifest_services = manifest_stack.get("services", [])
-        manifest_services_lower = [_normalize(s) for s in manifest_services]
         for expected_service in gt_stack.services:
             found = any(_matches(expected_service, s) for s in manifest_services)
-            checks.append(FactualCheck(
-                check_name=f"tech_stack:service:{_normalize(expected_service)}",
-                category="tech_stack",
-                passed=found,
-                expected=expected_service,
-                actual=", ".join(manifest_services) if manifest_services else "(none)",
-                detail=f"Service '{expected_service}' {'found' if found else 'not found'} in detected services",
-            ))
+            checks.append(
+                FactualCheck(
+                    check_name=f"tech_stack:service:{_normalize(expected_service)}",
+                    category="tech_stack",
+                    passed=found,
+                    expected=expected_service,
+                    actual=", ".join(manifest_services) if manifest_services else "(none)",
+                    detail=f"Service '{expected_service}' {'found' if found else 'not found'} in detected services",
+                )
+            )
 
     return checks
 
@@ -104,28 +107,33 @@ def _check_feature_detection(manifest_data: dict, ground_truth: GroundTruth) -> 
         for detected in detected_features:
             # Check keyword match in feature name or detected_intent
             feature_text = f"{detected.get('feature_name', '')} {detected.get('detected_intent', '')}".lower()
-            keyword_match = any(kw.lower() in feature_text for kw in gt_feature.keywords) if gt_feature.keywords else False
+            keyword_match = (
+                any(kw.lower() in feature_text for kw in gt_feature.keywords) if gt_feature.keywords else False
+            )
 
             # Check file pattern match
             detected_path = detected.get("file_path", "")
-            file_match = any(
-                pattern.lower() in detected_path.lower()
-                for pattern in gt_feature.file_patterns
-            ) if gt_feature.file_patterns else False
+            file_match = (
+                any(pattern.lower() in detected_path.lower() for pattern in gt_feature.file_patterns)
+                if gt_feature.file_patterns
+                else False
+            )
 
             if keyword_match or file_match:
                 matched = True
                 match_detail = f"Matched detected feature '{detected.get('feature_name', '?')}'"
                 break
 
-        checks.append(FactualCheck(
-            check_name=f"feature_detection:{gt_feature.name}",
-            category="feature_detection",
-            passed=matched,
-            expected=gt_feature.name,
-            actual=match_detail if matched else "(not detected)",
-            detail=match_detail if matched else f"Feature '{gt_feature.name}' was not detected",
-        ))
+        checks.append(
+            FactualCheck(
+                check_name=f"feature_detection:{gt_feature.name}",
+                category="feature_detection",
+                passed=matched,
+                expected=gt_feature.name,
+                actual=match_detail if matched else "(not detected)",
+                detail=match_detail if matched else f"Feature '{gt_feature.name}' was not detected",
+            )
+        )
 
     return checks
 
@@ -143,27 +151,31 @@ def _check_industry(manifest_data: dict, ground_truth: GroundTruth) -> list[Fact
     # Check primary industry
     acceptable = [gt_industry.primary] + gt_industry.acceptable_alternatives
     primary_match = any(_matches(acc, actual_primary) for acc in acceptable)
-    checks.append(FactualCheck(
-        check_name="industry:primary",
-        category="industry",
-        passed=primary_match,
-        expected=gt_industry.primary,
-        actual=actual_primary,
-        detail=f"Acceptable: {acceptable}. Got: '{actual_primary}'",
-    ))
+    checks.append(
+        FactualCheck(
+            check_name="industry:primary",
+            category="industry",
+            passed=primary_match,
+            expected=gt_industry.primary,
+            actual=actual_primary,
+            detail=f"Acceptable: {acceptable}. Got: '{actual_primary}'",
+        )
+    )
 
     # Check expected tags in secondary
     actual_secondary = manifest_industry.get("secondary") or []
     for tag in gt_industry.expected_tags:
         found = any(_matches(tag, s) for s in actual_secondary)
-        checks.append(FactualCheck(
-            check_name=f"industry:tag:{_normalize(tag)}",
-            category="industry",
-            passed=found,
-            expected=tag,
-            actual=", ".join(actual_secondary) if actual_secondary else "(none)",
-            detail=f"Tag '{tag}' {'found' if found else 'not found'} in secondary tags",
-        ))
+        checks.append(
+            FactualCheck(
+                check_name=f"industry:tag:{_normalize(tag)}",
+                category="industry",
+                passed=found,
+                expected=tag,
+                actual=", ".join(actual_secondary) if actual_secondary else "(none)",
+                detail=f"Tag '{tag}' {'found' if found else 'not found'} in secondary tags",
+            )
+        )
 
     return checks
 
@@ -208,14 +220,16 @@ def _check_file_references(manifest_data: dict, codebase_path: Path | None) -> l
     # Report as a single aggregate check (individual paths too noisy)
     total = len(file_paths)
     ratio = valid_count / total if total > 0 else 0.0
-    checks.append(FactualCheck(
-        check_name="file_references:validity",
-        category="file_references",
-        passed=ratio >= 0.5,  # Pass if at least half of referenced files exist
-        expected=f"{total} file paths should exist",
-        actual=f"{valid_count}/{total} exist ({ratio:.0%})",
-        detail=f"{valid_count} of {total} referenced file paths exist in the codebase",
-    ))
+    checks.append(
+        FactualCheck(
+            check_name="file_references:validity",
+            category="file_references",
+            passed=ratio >= 0.5,  # Pass if at least half of referenced files exist
+            expected=f"{total} file paths should exist",
+            actual=f"{valid_count}/{total} exist ({ratio:.0%})",
+            detail=f"{valid_count} of {total} referenced file paths exist in the codebase",
+        )
+    )
 
     return checks
 
@@ -253,7 +267,7 @@ def evaluate_factual(
     # Load manifest data
     manifest_path = result.output_dir / "growth-manifest.json"
     if not manifest_path.exists():
-        logger.warning(f"  -> No growth-manifest.json found, skipping factual evaluation")
+        logger.warning("  -> No growth-manifest.json found, skipping factual evaluation")
         return FactualEvaluation(
             codebase_name=result.codebase_name,
             model_name=result.model_name,

@@ -106,8 +106,7 @@ def _build_summary_markdown(
     lines: list[str] = []
     lines.append("# Benchmark Results\n")
     lines.append(f"Generated: {summary_data['generated_at']}\n")
-    lines.append(f"Total runs: {summary_data['total_runs']} | "
-                 f"Successful: {summary_data['successful_runs']}\n")
+    lines.append(f"Total runs: {summary_data['total_runs']} | Successful: {summary_data['successful_runs']}\n")
 
     # Comparison table
     codebases = sorted(set(r.codebase_name for r in results))
@@ -211,8 +210,7 @@ def _build_summary_markdown(
             status = "PASS" if r.success else "FAIL"
             score_str = f"{ev.score:.0%}" if ev else "N/A"
             factual_str = f" | Factual: {fev.score:.0%}" if fev else ""
-            lines.append(f"- **{r.model_name}** (run {r.run_number}): {status} | "
-                         f"Structural: {score_str}{factual_str}")
+            lines.append(f"- **{r.model_name}** (run {r.run_number}): {status} | Structural: {score_str}{factual_str}")
 
             if ev:
                 failed_checks = [c for c in ev.checks if not c.passed]
@@ -249,7 +247,9 @@ def _build_summary_markdown(
         best_f = max(factual_evals, key=lambda e: e.score)
         worst_f = min(factual_evals, key=lambda e: e.score)
         lines.append(f"- **Best factual score**: {best_f.model_name} on {best_f.codebase_name} ({best_f.score:.0%})")
-        lines.append(f"- **Worst factual score**: {worst_f.model_name} on {worst_f.codebase_name} ({worst_f.score:.0%})")
+        lines.append(
+            f"- **Worst factual score**: {worst_f.model_name} on {worst_f.codebase_name} ({worst_f.score:.0%})"
+        )
 
     # Common failures
     failure_counts: dict[str, int] = {}
