@@ -41,7 +41,7 @@ def main(
     evaluate_only: Path | None = typer.Option(
         None,
         "--evaluate-only",
-        help="Re-evaluate existing results directory (stub — not yet implemented)",
+        help="Re-evaluate existing results directory (skip pipeline, re-run checks and report)",
     ),
 ) -> None:
     """Run the skene-growth benchmark suite."""
@@ -49,42 +49,67 @@ def main(
     from benchmarks.evaluation.report import generate_report
     from benchmarks.evaluation.structural import evaluate_structural
     from benchmarks.runner.models import load_benchmark_config, resolve_api_keys
-    from benchmarks.runner.orchestrator import create_timestamped_results_dir, run_benchmark_matrix
-
-    if evaluate_only:
-        logger.error("--evaluate-only is not yet implemented")
-        raise typer.Exit(1)
-
-    # Load config
-    logger.info(f"Loading config from {config}")
-    try:
-        bench_config = load_benchmark_config(config)
-    except Exception as e:
-        logger.error(f"Failed to load config: {e}")
-        raise typer.Exit(1)
-
-    logger.info(
-        f"Config: {len(bench_config.codebases)} codebase(s), "
-        f"{len(bench_config.models)} model(s), "
-        f"{bench_config.settings.runs_per_combo} run(s) per combo"
+    from benchmarks.runner.orchestrator import (
+        create_timestamped_results_dir,
+        load_results_from_directory,
+        run_benchmark_matrix,
     )
 
-    # Resolve API keys
-    try:
-        api_keys = resolve_api_keys(bench_config)
-    except ValueError as e:
-        logger.error(str(e))
-        raise typer.Exit(1)
+    if evaluate_only:
+        # Re-evaluate existing results without re-running the pipeline
+        results_dir = evaluate_only
+        logger.info(f"Re-evaluating existing results from {results_dir}")
 
-    logger.info(f"Resolved {len(api_keys)} API key(s)")
+        try:
+            results = load_results_from_directory(results_dir)
+        except FileNotFoundError as e:
+            logger.error(str(e))
+            raise typer.Exit(1)
 
-    # Create results directory
-    results_base = Path("benchmarks/results")
-    results_dir = create_timestamped_results_dir(results_base)
-    logger.info(f"Results directory: {results_dir}")
+        if not results:
+            logger.error(f"No results found in {results_dir}")
+            raise typer.Exit(1)
 
-    # Run benchmark matrix
-    results = run_benchmark_matrix(bench_config, api_keys, results_dir)
+        # Load config for ground truth paths (if config exists)
+        bench_config = None
+        if config.exists():
+            try:
+                bench_config = load_benchmark_config(config)
+                logger.info(f"Loaded config from {config} (for ground truth)")
+            except Exception as e:
+                logger.warning(f"Could not load config for ground truth: {e}")
+    else:
+        # Full pipeline run
+        # Load config
+        logger.info(f"Loading config from {config}")
+        try:
+            bench_config = load_benchmark_config(config)
+        except Exception as e:
+            logger.error(f"Failed to load config: {e}")
+            raise typer.Exit(1)
+
+        logger.info(
+            f"Config: {len(bench_config.codebases)} codebase(s), "
+            f"{len(bench_config.models)} model(s), "
+            f"{bench_config.settings.runs_per_combo} run(s) per combo"
+        )
+
+        # Resolve API keys
+        try:
+            api_keys = resolve_api_keys(bench_config)
+        except ValueError as e:
+            logger.error(str(e))
+            raise typer.Exit(1)
+
+        logger.info(f"Resolved {len(api_keys)} API key(s)")
+
+        # Create results directory
+        results_base = Path("benchmarks/results")
+        results_dir = create_timestamped_results_dir(results_base)
+        logger.info(f"Results directory: {results_dir}")
+
+        # Run benchmark matrix
+        results = run_benchmark_matrix(bench_config, api_keys, results_dir)
 
     # Structural evaluation
     logger.info("Running structural evaluation...")
@@ -96,14 +121,15 @@ def main(
     from benchmarks.evaluation.models import FactualEvaluation
 
     ground_truth_map: dict[str, Path] = {}
-    for cb in bench_config.codebases:
-        if cb.ground_truth:
-            ground_truth_map[cb.name] = cb.ground_truth
+    if bench_config:
+        for cb in bench_config.codebases:
+            if cb.ground_truth:
+                ground_truth_map[cb.name] = cb.ground_truth
 
     factual_evals: list[FactualEvaluation] = []
     if ground_truth_map:
         logger.info(f"Running factual evaluation for {len(ground_truth_map)} codebase(s) with ground truth...")
-        codebase_paths = {cb.name: cb.path for cb in bench_config.codebases}
+        codebase_paths = {cb.name: cb.path for cb in bench_config.codebases} if bench_config else {}
         for r in results:
             gt_path = ground_truth_map.get(r.codebase_name)
             if gt_path:
@@ -114,7 +140,7 @@ def main(
         logger.info("No ground truth files configured, skipping factual evaluation")
 
     # LLM judge evaluation (optional)
-    if not skip_judge:
+    if not skip_judge and bench_config:
         judge_key_env = bench_config.settings.judge_api_key_env
         judge_api_key = os.environ.get(judge_key_env)
         for r in results:
@@ -124,6 +150,8 @@ def main(
                 judge_model=bench_config.settings.judge_model,
                 judge_api_key=judge_api_key,
             )
+    elif not skip_judge and not bench_config:
+        logger.warning("Skipping LLM judge: no config loaded (needed for judge settings)")
 
     # Generate report
     json_path, md_path = generate_report(results, structural_evals, results_dir, factual_evals)
