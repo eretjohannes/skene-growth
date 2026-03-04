@@ -1,0 +1,67 @@
+# Login Command
+
+The `login` and `logout` commands manage authentication with Skene Cloud upstream, which is required for pushing growth loops and telemetry via the `push` command.
+
+## Prerequisites
+
+- A Skene Cloud workspace URL (e.g. `https://skene.ai/workspace/my-app`)
+- An API token for your workspace
+
+## Basic usage
+
+Log in to upstream:
+
+```bash
+uvx skene-growth login --upstream https://skene.ai/workspace/my-app
+```
+
+The command prompts you for a token, validates it against the upstream API, and saves the credentials.
+
+Check login status:
+
+```bash
+uvx skene-growth login --status
+```
+
+Log out:
+
+```bash
+uvx skene-growth logout
+```
+
+## Flag reference
+
+### `login`
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--upstream TEXT` | `-u` | Upstream workspace URL |
+| `--status` | `-s` | Show current login status for this project |
+
+### `logout`
+
+No options. Removes saved credentials for the current project.
+
+## How credentials are stored
+
+Login saves two files:
+
+| File | Contents | Security |
+|------|----------|----------|
+| `.skene-upstream` (project directory) | Upstream URL, workspace slug, timestamp | Non-secret, safe to commit |
+| `~/.config/skene-growth/credentials` | Authentication token (keyed by workspace) | Restrictive permissions (`0600`), never commit |
+
+Each project can target a different upstream workspace. The credentials file stores tokens keyed by workspace slug, so multiple projects can coexist.
+
+## Token resolution
+
+When commands need an upstream token, it is resolved in this order:
+
+1. `SKENE_UPSTREAM_API_KEY` environment variable
+2. Config file `api_key` field (if `.skene-upstream` exists)
+3. `~/.config/skene-growth/credentials` file (keyed by workspace)
+
+## Next steps
+
+- [Push](push.md) -- Push growth loops and telemetry to upstream
+- [Configuration](configuration.md) -- Config files, env vars, and priority

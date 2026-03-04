@@ -66,6 +66,7 @@ Displays all current configuration values and their sources.
 | `verbose` | boolean | `false` | Enable verbose output |
 | `debug` | boolean | `false` | Enable debug logging |
 | `exclude_folders` | list | `[]` | Folder names to exclude from analysis |
+| `upstream` | string | — | Upstream workspace URL for `push` command |
 
 ### Default models by provider
 
@@ -116,8 +117,20 @@ exclude_folders = ["tests", "vendor"]
 | `SKENE_PROVIDER` | Provider name | `gemini` |
 | `SKENE_BASE_URL` | Base URL for generic provider | `http://localhost:8000/v1` |
 | `SKENE_DEBUG` | Enable debug mode | `true` |
+| `SKENE_UPSTREAM_API_KEY` | API key for upstream authentication | `sk-upstream-...` |
 | `LMSTUDIO_BASE_URL` | LM Studio server URL | `http://localhost:1234/v1` |
 | `OLLAMA_BASE_URL` | Ollama server URL | `http://localhost:11434/v1` |
+
+## Upstream credentials
+
+When using `skene push` to deploy to Skene Cloud, credentials are stored separately from the config file:
+
+| File | Contents | Purpose |
+|------|----------|---------|
+| `.skene-upstream` | Upstream URL, workspace slug, timestamp | Per-project upstream target (non-secret) |
+| `~/.config/skene-growth/credentials` | Authentication tokens keyed by workspace | Secure token storage (`0600` permissions) |
+
+These files are managed by `skene login` and `skene logout`. See the [login guide](login.md) for details.
 
 ## Excluding folders
 

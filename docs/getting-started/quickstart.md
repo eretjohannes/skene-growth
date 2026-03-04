@@ -1,6 +1,6 @@
 # Quickstart
 
-Get from zero to a full growth plan in six commands.
+Get from zero to a deployed growth loop in eight commands.
 
 > **Prerequisites**
 >
@@ -8,7 +8,7 @@ Get from zero to a full growth plan in six commands.
 > - [uv](https://docs.astral.sh/uv/) installed (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
 > - An API key from OpenAI, Google Gemini, or Anthropic -- OR a local LLM running via [LM Studio](https://lmstudio.ai/) or [Ollama](https://ollama.com/)
 
-## The 6-step workflow
+## The 8-step workflow
 
 ### Step 1: Create a config file
 
@@ -114,9 +114,34 @@ For LLM-powered semantic matching to find alternative implementations:
 uvx skene-growth status --find-alternatives --api-key "your-key"
 ```
 
+### Step 7: Initialize Supabase base schema
+
+If your project uses Supabase, set up the base schema for telemetry collection:
+
+```bash
+uvx skene-growth init
+```
+
+This creates `supabase/migrations/20260201000000_skene_growth_schema.sql` with the event_log, failed_events, and enrichment_map tables. Safe to run repeatedly -- skips if the migration already exists.
+
+### Step 8: Push growth loops to Supabase and upstream
+
+```bash
+uvx skene-growth push
+```
+
+This reads all growth loops with Supabase telemetry from `./skene-context/growth-loops/`, generates a migration with trigger functions, and writes it to `supabase/migrations/`.
+
+To also push to Skene Cloud upstream:
+
+```bash
+uvx skene-growth login --upstream https://skene.ai/workspace/my-app
+uvx skene-growth push
+```
+
 ## What you get
 
-After running all six steps, your `./skene-context/` directory contains:
+After running all eight steps, your `./skene-context/` directory contains:
 
 | File | Description |
 |---|---|
@@ -124,7 +149,8 @@ After running all six steps, your `./skene-context/` directory contains:
 | `growth-template.json` | Business-type-aware growth template with prioritized recommendations |
 | `growth-plan.md` | Full growth plan with executive summary, priorities, and technical execution details |
 | `implementation-prompt.md` | Ready-to-use prompt for your AI coding assistant |
-| `growth-loops/*.json` | Growth loop definitions with file/function requirements for validation |
+| `growth-loops/*.json` | Growth loop definitions with telemetry specs, feature links, and verification requirements |
+| `feature-registry.json` | Persistent registry tracking features across analysis runs with growth loop mappings |
 
 ## Alternative: Quick one-liner
 
@@ -155,6 +181,9 @@ When no API key is configured and you are not using a local provider, the comman
 - [Analyze command in depth](../guides/analyze.md) -- all flags, output customization, excluding folders
 - [Plan command in depth](../guides/plan.md) -- context directories, activation mode, custom manifest paths
 - [Build command in depth](../guides/build.md) -- prompt generation, Cursor/Claude integration
+- [Push command in depth](../guides/push.md) -- Supabase migrations and upstream deployment
 - [Status command in depth](../guides/status.md) -- growth loop validation and alternative matching
+- [Features](../guides/features.md) -- managing and exporting the feature registry
+- [Login](../guides/login.md) -- authenticating with Skene Cloud upstream
 - [Configuration reference](../guides/configuration.md) -- config files, environment variables, precedence rules
 - [LLM providers](../guides/llm-providers.md) -- setup for OpenAI, Gemini, Anthropic, LM Studio, Ollama, and generic endpoints
