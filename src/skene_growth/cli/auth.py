@@ -101,9 +101,7 @@ def cmd_login(upstream_url: str | None = None) -> None:
 
     if not token:
         console.print("----------------------------------------------------------------")
-        console.print(
-            f"[dim]Logging in to workspace:[/dim] [bold]{workspace}[/bold]  ({url})"
-        )
+        console.print(f"[dim]Logging in to workspace:[/dim] [bold]{workspace}[/bold]  ({url})")
         base = url.rstrip("/").split("/workspace/")[0] if "/workspace/" in url else url.rstrip("/")
         api_key_url = f"{base}/workspace/{workspace}/apikeys?setting_open=true"
         console.print("You need Skene API key. Get it at:")

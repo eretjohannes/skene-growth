@@ -66,12 +66,14 @@ class TestEventLogTriggers:
         assert "pg_net" not in sql
 
     def test_migration_has_no_pg_net_or_actions(self) -> None:
-        loops = [{
-            "loop_id": "x",
-            "requirements": {
-                "telemetry": [{"type": "supabase", "table": "t", "properties": ["id"]}],
-            },
-        }]
+        loops = [
+            {
+                "loop_id": "x",
+                "requirements": {
+                    "telemetry": [{"type": "supabase", "table": "t", "properties": ["id"]}],
+                },
+            }
+        ]
         migration = build_migration_sql(loops)
         assert "event_log" in migration
         assert "CREATE EXTENSION IF NOT EXISTS pg_net" not in migration

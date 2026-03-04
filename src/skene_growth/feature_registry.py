@@ -89,14 +89,8 @@ def _match_feature(
     new_id = derive_feature_id(new_f.get("feature_name", ""))
     if new_id and new_id == existing.get("feature_id"):
         return True
-    name_match = (
-        new_f.get("feature_name", "").strip().lower()
-        == existing.get("feature_name", "").strip().lower()
-    )
-    path_match = (
-        new_f.get("file_path", "").strip()
-        == existing.get("file_path", "").strip()
-    )
+    name_match = new_f.get("feature_name", "").strip().lower() == existing.get("feature_name", "").strip().lower()
+    path_match = new_f.get("file_path", "").strip() == existing.get("file_path", "").strip()
     return bool(name_match and path_match)
 
 
@@ -148,9 +142,7 @@ def merge_features_into_registry(
                 found = True
                 break
         if not found:
-            merged.append(
-                _feature_to_registry_item(new_f, now_str, is_new=True, loop_ids=loop_ids)
-            )
+            merged.append(_feature_to_registry_item(new_f, now_str, is_new=True, loop_ids=loop_ids))
 
     for ex in existing_list:
         eid = ex.get("feature_id", "")
@@ -293,6 +285,7 @@ def merge_registry_and_enrich_manifest(
     if not existing_loops:
         try:
             from skene_growth.growth_loops.storage import load_existing_growth_loops
+
             existing_loops = load_existing_growth_loops(context_dir)
         except Exception:
             existing_loops = []
@@ -343,20 +336,18 @@ def merge_registry_and_enrich_manifest(
             fid = _infer_loop_feature_link(loop, all_features)
         if not fid or fid == "unknown_feature":
             fid = derive_feature_id(loop.get("name", loop_id)) or "orphan_loop"
-        growth_loops_summary.append({
-            "loop_id": loop_id,
-            "name": loop.get("name", ""),
-            "linked_feature_id": fid,
-        })
+        growth_loops_summary.append(
+            {
+                "loop_id": loop_id,
+                "name": loop.get("name", ""),
+                "linked_feature_id": fid,
+            }
+        )
     merged_registry["growth_loops"] = growth_loops_summary
 
     write_feature_registry(registry_path, merged_registry)
 
-    registry_by_id = {
-        f["feature_id"]: f
-        for f in merged_registry.get("features", [])
-        if f.get("status") == "active"
-    }
+    registry_by_id = {f["feature_id"]: f for f in merged_registry.get("features", []) if f.get("status") == "active"}
     for mf in manifest_data.get("current_growth_features", []):
         fid = mf.get("feature_id") or derive_feature_id(mf.get("feature_name", ""))
         reg = registry_by_id.get(fid)
@@ -421,18 +412,18 @@ def export_registry_to_format(registry: dict[str, Any], fmt: str) -> str:
 
         buf = io.StringIO()
         writer = csv.writer(buf)
-        writer.writerow(
-            ["feature_id", "feature_name", "file_path", "status", "loop_ids", "growth_pillars"]
-        )
+        writer.writerow(["feature_id", "feature_name", "file_path", "status", "loop_ids", "growth_pillars"])
         for f in features:
-            writer.writerow([
-                f.get("feature_id", ""),
-                f.get("feature_name", ""),
-                f.get("file_path", ""),
-                f.get("status", ""),
-                "|".join(f.get("loop_ids", [])),
-                ",".join(f.get("growth_pillars", [])),
-            ])
+            writer.writerow(
+                [
+                    f.get("feature_id", ""),
+                    f.get("feature_name", ""),
+                    f.get("file_path", ""),
+                    f.get("status", ""),
+                    "|".join(f.get("loop_ids", [])),
+                    ",".join(f.get("growth_pillars", [])),
+                ]
+            )
         return buf.getvalue()
 
     if fmt_lower == "markdown":

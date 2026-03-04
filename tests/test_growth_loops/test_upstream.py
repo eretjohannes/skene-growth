@@ -16,7 +16,9 @@ from skene_growth.growth_loops.upstream import (
 
 class TestUpstreamHelpers:
     def test_api_base_from_upstream(self):
-        assert _api_base_from_upstream("https://skene.ai/workspace/my-app") == "https://skene.ai/workspace/my-app/api/v1"
+        assert (
+            _api_base_from_upstream("https://skene.ai/workspace/my-app") == "https://skene.ai/workspace/my-app/api/v1"
+        )
         assert _api_base_from_upstream("https://x.com/workspace/foo/api/v1") == "https://x.com/workspace/foo/api/v1"
 
     def test_workspace_slug_from_url(self):

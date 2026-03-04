@@ -171,11 +171,7 @@ def save_project_upstream(upstream_url: str, workspace_slug: str) -> Path:
     escaped_slug = workspace_slug.replace("\\", "\\\\").replace('"', '\\"')
     timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
-    content = (
-        f'upstream = "{escaped_url}"\n'
-        f'workspace = "{escaped_slug}"\n'
-        f'logged_in_at = "{timestamp}"\n'
-    )
+    content = f'upstream = "{escaped_url}"\nworkspace = "{escaped_slug}"\nlogged_in_at = "{timestamp}"\n'
     path.write_text(content, encoding="utf-8")
     return path
 

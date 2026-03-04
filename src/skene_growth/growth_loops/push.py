@@ -116,11 +116,7 @@ def extract_supabase_telemetry(loop_def: dict[str, Any]) -> list[dict[str, Any]]
     Extract telemetry items with type 'supabase' from a loop definition.
     """
     telemetry = loop_def.get("requirements", {}).get("telemetry", [])
-    return [
-        t
-        for t in telemetry
-        if isinstance(t, dict) and t.get("type") == "supabase"
-    ]
+    return [t for t in telemetry if isinstance(t, dict) and t.get("type") == "supabase"]
 
 
 def build_migration_sql(

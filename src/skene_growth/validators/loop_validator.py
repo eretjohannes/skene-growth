@@ -38,8 +38,10 @@ console = Console()
 # Data models
 # ---------------------------------------------------------------------------
 
+
 class CheckStatus(str, Enum):
     """Result status for a single requirement check."""
+
     PASSED = "passed"
     FAILED = "failed"
     SKIPPED = "skipped"
@@ -48,6 +50,7 @@ class CheckStatus(str, Enum):
 @dataclass
 class CheckResult:
     """Result of validating a single requirement check."""
+
     check_type: str
     pattern: str
     description: str
@@ -58,6 +61,7 @@ class CheckResult:
 @dataclass
 class FileValidationResult:
     """Aggregated result for a single file requirement."""
+
     path: str
     purpose: str
     required: bool
@@ -74,6 +78,7 @@ class FileValidationResult:
 @dataclass
 class AlternativeMatch:
     """An existing function that might fulfill a requirement."""
+
     file_path: str
     function_name: str
     signature: str
@@ -84,6 +89,7 @@ class AlternativeMatch:
 @dataclass
 class FunctionValidationResult:
     """Result of validating a function requirement."""
+
     file_path: str
     name: str
     required: bool
@@ -103,6 +109,7 @@ class FunctionValidationResult:
 @dataclass
 class LoopValidationResult:
     """Aggregated validation result for a complete growth loop."""
+
     loop_id: str
     loop_name: str
     source_file: str
@@ -131,8 +138,10 @@ class LoopValidationResult:
 # Telemetry / event hooks
 # ---------------------------------------------------------------------------
 
+
 class ValidationEvent(str, Enum):
     """Events emitted during the validation lifecycle."""
+
     LOOP_VALIDATION_STARTED = "loop_validation_started"
     REQUIREMENT_MET = "requirement_met"
     LOOP_COMPLETED = "loop_completed"
@@ -168,6 +177,7 @@ def _emit(event: ValidationEvent, payload: dict[str, Any]) -> None:
 # AST helpers
 # ---------------------------------------------------------------------------
 
+
 def _parse_ast(file_path: Path) -> ast.Module | None:
     """Parse a Python file into an AST, returning *None* on failure."""
     try:
@@ -189,11 +199,7 @@ def ast_function_names(tree: ast.Module) -> list[str]:
 
 def ast_class_names(tree: ast.Module) -> list[str]:
     """Return all class names defined in the module."""
-    return [
-        node.name
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ClassDef)
-    ]
+    return [node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
 
 
 def ast_import_names(tree: ast.Module) -> list[str]:
@@ -269,9 +275,11 @@ def _annotation_str(node: ast.expr | None) -> str:
 # Codebase function extraction (for finding alternatives)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FunctionInfo:
     """Information about a function extracted from the codebase."""
+
     file_path: str
     name: str
     signature: str
@@ -292,7 +300,7 @@ def extract_all_functions(project_root: Path, exclude_dirs: list[str] | None = N
         List of FunctionInfo objects for all functions found
     """
     if exclude_dirs is None:
-        exclude_dirs = ['venv', '.venv', '__pycache__', '.git', 'node_modules', '.pytest_cache']
+        exclude_dirs = ["venv", ".venv", "__pycache__", ".git", "node_modules", ".pytest_cache"]
 
     functions: list[FunctionInfo] = []
 
@@ -326,19 +334,21 @@ def extract_all_functions(project_root: Path, exclude_dirs: list[str] | None = N
 
                 # Extract source code snippet (first 20 lines of function)
                 source_snippet = ""
-                if source_lines and hasattr(node, 'lineno'):
+                if source_lines and hasattr(node, "lineno"):
                     start_line = node.lineno - 1
                     end_line = min(start_line + 20, len(source_lines))
                     source_snippet = "\n".join(source_lines[start_line:end_line])
 
-                functions.append(FunctionInfo(
-                    file_path=rel_path,
-                    name=node.name,
-                    signature=sig,
-                    docstring=docstring,
-                    line_number=node.lineno if hasattr(node, 'lineno') else 0,
-                    source_code=source_snippet,
-                ))
+                functions.append(
+                    FunctionInfo(
+                        file_path=rel_path,
+                        name=node.name,
+                        signature=sig,
+                        docstring=docstring,
+                        line_number=node.lineno if hasattr(node, "lineno") else 0,
+                        source_code=source_snippet,
+                    )
+                )
 
     return functions
 
@@ -371,7 +381,8 @@ async def find_semantic_matches(
 
     # Filter: skip test files, dunder methods, and private helpers — prioritise source code
     filtered = [
-        f for f in candidate_functions
+        f
+        for f in candidate_functions
         if not f.file_path.startswith("tests/")
         and not f.name.startswith("test_")
         and f.name != "__init__"
@@ -384,13 +395,15 @@ async def find_semantic_matches(
     # Build prompt for LLM
     candidates_json = []
     for func in candidates:
-        candidates_json.append({
-            "file": func.file_path,
-            "name": func.name,
-            "signature": func.signature,
-            "docstring": func.docstring[:200] if func.docstring else "",
-            "source_preview": func.source_code[:500] if func.source_code else "",
-        })
+        candidates_json.append(
+            {
+                "file": func.file_path,
+                "name": func.name,
+                "signature": func.signature,
+                "docstring": func.docstring[:200] if func.docstring else "",
+                "source_preview": func.source_code[:500] if func.source_code else "",
+            }
+        )
 
     logger.debug("Searching for alternatives to '{}' ({} candidates)", req_name, len(candidates))
 
@@ -447,13 +460,15 @@ Return ONLY valid JSON, no markdown, no explanations."""
         matches: list[AlternativeMatch] = []
         for match_data in matches_data:
             if isinstance(match_data, dict) and match_data.get("confidence", 0) >= 0.6:
-                matches.append(AlternativeMatch(
-                    file_path=match_data.get("file", ""),
-                    function_name=match_data.get("function_name", ""),
-                    signature=match_data.get("signature", ""),
-                    confidence=float(match_data.get("confidence", 0)),
-                    reasoning=match_data.get("reasoning", ""),
-                ))
+                matches.append(
+                    AlternativeMatch(
+                        file_path=match_data.get("file", ""),
+                        function_name=match_data.get("function_name", ""),
+                        signature=match_data.get("signature", ""),
+                        confidence=float(match_data.get("confidence", 0)),
+                        reasoning=match_data.get("reasoning", ""),
+                    )
+                )
 
         # Sort by confidence (highest first)
         matches.sort(key=lambda x: x.confidence, reverse=True)
@@ -486,6 +501,7 @@ _LEGACY_TYPE_MAP = {
 @dataclass
 class NormalisedCheck:
     """A check normalised from either dict or string format."""
+
     check_type: str  # contains | function_exists | class_exists | import_exists
     pattern: str
     description: str
@@ -531,8 +547,11 @@ def normalise_check(raw: dict | str) -> NormalisedCheck:
 # Individual check runners
 # ---------------------------------------------------------------------------
 
+
 def _run_contains_check(
-    file_path: Path, pattern: str, description: str,
+    file_path: Path,
+    pattern: str,
+    description: str,
 ) -> CheckResult:
     """Check whether *file_path* contains a literal or regex *pattern*."""
     try:
@@ -546,7 +565,9 @@ def _run_contains_check(
 
 
 def _run_function_exists_check(
-    tree: ast.Module | None, pattern: str, description: str,
+    tree: ast.Module | None,
+    pattern: str,
+    description: str,
 ) -> CheckResult:
     """Check whether a function named *pattern* exists in the AST."""
     if tree is None:
@@ -557,7 +578,9 @@ def _run_function_exists_check(
 
 
 def _run_class_exists_check(
-    tree: ast.Module | None, pattern: str, description: str,
+    tree: ast.Module | None,
+    pattern: str,
+    description: str,
 ) -> CheckResult:
     """Check whether a class named *pattern* exists in the AST."""
     if tree is None:
@@ -568,7 +591,9 @@ def _run_class_exists_check(
 
 
 def _run_import_exists_check(
-    tree: ast.Module | None, pattern: str, description: str,
+    tree: ast.Module | None,
+    pattern: str,
+    description: str,
 ) -> CheckResult:
     """Check whether an import matching *pattern* exists in the AST."""
     if tree is None:
@@ -594,6 +619,7 @@ _CHECK_RUNNERS = {
 # ---------------------------------------------------------------------------
 # High-level validation
 # ---------------------------------------------------------------------------
+
 
 def _resolve_file_path(requirement_path: str, project_root: Path) -> Path:
     """Resolve a requirement file path relative to the project root."""
@@ -639,8 +665,11 @@ def validate_file_requirement(
             check_result = runner(abs_path, tree, nc.pattern, nc.description)
         else:
             check_result = CheckResult(
-                nc.check_type, nc.pattern, nc.description,
-                CheckStatus.SKIPPED, f"Unknown check type: {nc.check_type}",
+                nc.check_type,
+                nc.pattern,
+                nc.description,
+                CheckStatus.SKIPPED,
+                f"Unknown check type: {nc.check_type}",
             )
         result.checks.append(check_result)
 
@@ -695,9 +724,14 @@ def validate_function_requirement(
             logger.debug("Failed to find semantic matches: {}", exc)
 
     return FunctionValidationResult(
-        file_path=file_rel, name=name, required=required,
-        expected_signature=expected_sig, found=found,
-        signature_match=sig_match, detail=detail, alternatives=alternatives,
+        file_path=file_rel,
+        name=name,
+        required=required,
+        expected_signature=expected_sig,
+        found=found,
+        signature_match=sig_match,
+        detail=detail,
+        alternatives=alternatives,
     )
 
 
@@ -716,10 +750,13 @@ def validate_growth_loop(
     loop_name = loop_data.get("name", "Unnamed Loop")
     source_file = loop_data.get("_source_file", "")
 
-    _emit(ValidationEvent.LOOP_VALIDATION_STARTED, {
-        "loop_id": loop_id,
-        "loop_name": loop_name,
-    })
+    _emit(
+        ValidationEvent.LOOP_VALIDATION_STARTED,
+        {
+            "loop_id": loop_id,
+            "loop_name": loop_name,
+        },
+    )
 
     start = time.perf_counter()
     requirements = loop_data.get("requirements", {})
@@ -735,38 +772,50 @@ def validate_growth_loop(
         fv = validate_file_requirement(file_req, project_root)
         result.file_results.append(fv)
         if fv.passed:
-            _emit(ValidationEvent.REQUIREMENT_MET, {
-                "loop_id": loop_id,
-                "type": "file",
-                "path": fv.path,
-            })
+            _emit(
+                ValidationEvent.REQUIREMENT_MET,
+                {
+                    "loop_id": loop_id,
+                    "type": "file",
+                    "path": fv.path,
+                },
+            )
 
     # --- Function requirements ---
     for func_req in requirements.get("functions", []):
         fv = validate_function_requirement(func_req, project_root, all_functions, llm_client)
         result.function_results.append(fv)
         if fv.passed:
-            _emit(ValidationEvent.REQUIREMENT_MET, {
-                "loop_id": loop_id,
-                "type": "function",
-                "name": fv.name,
-                "file": fv.file_path,
-            })
+            _emit(
+                ValidationEvent.REQUIREMENT_MET,
+                {
+                    "loop_id": loop_id,
+                    "type": "function",
+                    "name": fv.name,
+                    "file": fv.file_path,
+                },
+            )
 
     elapsed = (time.perf_counter() - start) * 1000
     result.elapsed_ms = elapsed
 
-    _emit(ValidationEvent.VALIDATION_TIME, {
-        "loop_id": loop_id,
-        "elapsed_ms": round(elapsed, 2),
-    })
+    _emit(
+        ValidationEvent.VALIDATION_TIME,
+        {
+            "loop_id": loop_id,
+            "elapsed_ms": round(elapsed, 2),
+        },
+    )
 
     if result.all_passed:
-        _emit(ValidationEvent.LOOP_COMPLETED, {
-            "loop_id": loop_id,
-            "loop_name": loop_name,
-            "total_checks": result.total_checks,
-        })
+        _emit(
+            ValidationEvent.LOOP_COMPLETED,
+            {
+                "loop_id": loop_id,
+                "loop_name": loop_name,
+                "total_checks": result.total_checks,
+            },
+        )
 
     return result
 
@@ -830,8 +879,7 @@ def print_validation_report(results: list[LoopValidationResult]) -> None:
     console.print()
     console.print(
         Panel(
-            f"[bold]Growth Loop Validation[/bold]  —  "
-            f"{completed_loops}/{total_loops} loops complete",
+            f"[bold]Growth Loop Validation[/bold]  —  {completed_loops}/{total_loops} loops complete",
             style="cyan",
         )
     )

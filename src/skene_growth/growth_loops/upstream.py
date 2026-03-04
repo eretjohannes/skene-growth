@@ -86,10 +86,12 @@ def build_package(
     resolved_loops_dir = loops_dir or project_root / "skene-context" / "growth-loops"
     if resolved_loops_dir.exists() and resolved_loops_dir.is_dir():
         for p in sorted(resolved_loops_dir.glob("*.json")):
-            package["growth_loops"].append({
-                "name": p.name,
-                "content": p.read_text(encoding="utf-8"),
-            })
+            package["growth_loops"].append(
+                {
+                    "name": p.name,
+                    "content": p.read_text(encoding="utf-8"),
+                }
+            )
 
     # Telemetry migration only (not schema)
     migrations_dir = project_root / "supabase" / "migrations"

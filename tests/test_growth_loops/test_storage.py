@@ -136,7 +136,7 @@ class TestGenerateTimestampedFilename:
         """Should generate filename with timestamp."""
         result = generate_timestamped_filename("discovery_engine")
         assert result.endswith("_discovery_engine.json")
-        assert result[:-len("_discovery_engine.json")].replace("_", "").isdigit()
+        assert result[: -len("_discovery_engine.json")].replace("_", "").isdigit()
 
     def test_unique_timestamps(self):
         """Should generate unique filenames on repeated calls."""

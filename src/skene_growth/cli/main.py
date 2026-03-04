@@ -61,8 +61,18 @@ from skene_growth.config import default_model_for_provider, load_config, load_pr
 
 # Command order and groups for --help
 _COMMAND_ORDER = [
-    "analyze", "plan", "build", "status", "push", "config", "validate",
-    "login", "logout", "features", "init", "chat",
+    "analyze",
+    "plan",
+    "build",
+    "status",
+    "push",
+    "config",
+    "validate",
+    "login",
+    "logout",
+    "features",
+    "init",
+    "chat",
 ]
 
 
@@ -1164,11 +1174,7 @@ def push(
 
     config = load_config()
     project_upstream = load_project_upstream()
-    resolved_upstream = (
-        upstream
-        or (project_upstream.get("upstream") if project_upstream else None)
-        or config.upstream
-    )
+    resolved_upstream = upstream or (project_upstream.get("upstream") if project_upstream else None) or config.upstream
     resolved_token = resolve_upstream_token(config) if resolved_upstream else None
 
     # Resolve context directory
@@ -1197,9 +1203,7 @@ def push(
         loops = load_existing_growth_loops(context)
         loops_with_telemetry = [loop for loop in loops if extract_supabase_telemetry(loop)]
         if loop_id:
-            loops_with_telemetry = [
-                loop for loop in loops_with_telemetry if loop.get("loop_id") == loop_id
-            ]
+            loops_with_telemetry = [loop for loop in loops_with_telemetry if loop.get("loop_id") == loop_id]
             if not loops_with_telemetry:
                 console.print(f"[red]No loop with loop_id '{loop_id}' has Supabase telemetry.[/red]")
                 raise typer.Exit(1)
@@ -1221,9 +1225,7 @@ def push(
             ctx = context or path / "skene-context"
             if (ctx / "growth-loops").is_dir():
                 loops_with_telemetry = [
-                    loop
-                    for loop in load_existing_growth_loops(ctx)
-                    if extract_supabase_telemetry(loop)
+                    loop for loop in load_existing_growth_loops(ctx) if extract_supabase_telemetry(loop)
                 ]
 
         if resolved_upstream:
@@ -1232,8 +1234,7 @@ def push(
                 migrations_dir = path / "supabase" / "migrations"
                 if migrations_dir.exists():
                     telemetry = next(
-                        (p for p in sorted(migrations_dir.glob("*.sql"))
-                         if "skene_growth_telemetry" in p.name.lower()),
+                        (p for p in sorted(migrations_dir.glob("*.sql")) if "skene_growth_telemetry" in p.name.lower()),
                         None,
                     )
                     if telemetry:
@@ -1241,9 +1242,7 @@ def push(
                 if (ctx / "growth-loops").is_dir():
                     console.print(f"[green]Growth loops:[/green] {ctx / 'growth-loops'}")
             if not resolved_token:
-                console.print(
-                    "[yellow]No token. Run skene login to authenticate.[/yellow]"
-                )
+                console.print("[yellow]No token. Run skene login to authenticate.[/yellow]")
             else:
                 loops_dir = ctx / "growth-loops" if ctx.exists() else None
                 if loops_dir and loops_dir.exists():
@@ -1257,11 +1256,7 @@ def push(
                 )
                 if result.get("ok"):
                     loops_dir = ctx / "growth-loops" if ctx.exists() else None
-                    growth_loops_count = (
-                        len(list(loops_dir.glob("*.json")))
-                        if loops_dir and loops_dir.exists()
-                        else 0
-                    )
+                    growth_loops_count = len(list(loops_dir.glob("*.json"))) if loops_dir and loops_dir.exists() else 0
                     suffix = "s" if growth_loops_count != 1 else ""
                     sent_parts = [
                         f"growth-loops ({growth_loops_count} file{suffix})",
@@ -1279,9 +1274,7 @@ def push(
                         console.print(f"[yellow]{msg}[/yellow]")
 
         if not push_only:
-            console.print(
-                "\n[dim]Upstream parses the package (growth loops + telemetry.sql) and deploys.[/dim]\n"
-            )
+            console.print("\n[dim]Upstream parses the package (growth loops + telemetry.sql) and deploys.[/dim]\n")
     except Exception as e:
         console.print(f"[red]Deploy failed:[/red] {e}")
         raise typer.Exit(1)
