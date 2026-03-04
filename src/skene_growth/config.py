@@ -198,8 +198,9 @@ def save_workspace_token(workspace_slug: str, token: str) -> Path:
     if cred_path.exists():
         try:
             existing = load_toml(cred_path)
-        except Exception:
-            pass
+        except (OSError, tomllib.TOMLDecodeError):
+            # Corrupted or unreadable credentials file — start fresh
+            existing = {}
 
     workspaces = dict(existing.get("workspaces", {}))
     escaped = token.replace("\\", "\\\\").replace('"', '\\"')
