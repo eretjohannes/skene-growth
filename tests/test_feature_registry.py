@@ -1,7 +1,6 @@
 """Tests for feature registry (feature-registry.json merge and export)."""
 
 import json
-from datetime import datetime
 
 import pytest
 
@@ -55,7 +54,6 @@ class TestMergeFeaturesIntoRegistry:
         assert "last_seen_at" in f
 
     def test_matching_updates_existing(self):
-        now = datetime.now().isoformat()
         existing = {
             "version": "1.0",
             "features": [
@@ -274,7 +272,14 @@ class TestExportRegistryToFormat:
     def test_csv_format(self):
         registry = {
             "features": [
-                {"feature_id": "x", "feature_name": "X", "file_path": "a", "status": "active", "loop_ids": [], "growth_pillars": []},
+                {
+                    "feature_id": "x",
+                    "feature_name": "X",
+                    "file_path": "a",
+                    "status": "active",
+                    "loop_ids": [],
+                    "growth_pillars": [],
+                },
             ],
         }
         out = export_registry_to_format(registry, "csv")

@@ -32,7 +32,8 @@ class TestBuildPackage:
         (tmp_path / "skene-context" / "growth-loops").mkdir(parents=True)
         (tmp_path / "skene-context" / "growth-loops" / "loop1.json").write_text('{"loop_id": "loop1"}')
         (tmp_path / "supabase" / "migrations").mkdir(parents=True)
-        (tmp_path / "supabase" / "migrations" / "20260304151537_skene_growth_telemetry.sql").write_text("CREATE TRIGGER")
+        telemetry_sql = tmp_path / "supabase" / "migrations" / "20260304151537_skene_growth_telemetry.sql"
+        telemetry_sql.write_text("CREATE TRIGGER")
 
         package = build_package(tmp_path)
         assert len(package["growth_loops"]) == 1
@@ -43,7 +44,8 @@ class TestBuildPackage:
     def test_package_excludes_schema_migration(self, tmp_path: Path):
         (tmp_path / "supabase" / "migrations").mkdir(parents=True)
         (tmp_path / "supabase" / "migrations" / "20260201000000_skene_growth_schema.sql").write_text("CREATE SCHEMA")
-        (tmp_path / "supabase" / "migrations" / "20260304151537_skene_growth_telemetry.sql").write_text("CREATE TRIGGER")
+        telemetry_sql = tmp_path / "supabase" / "migrations" / "20260304151537_skene_growth_telemetry.sql"
+        telemetry_sql.write_text("CREATE TRIGGER")
 
         package = build_package(tmp_path)
         assert "CREATE SCHEMA" not in (package["telemetry_sql"] or "")

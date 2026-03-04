@@ -24,12 +24,12 @@ from typing import Any, Optional
 import click
 import typer
 from pydantic import SecretStr
-from typer.core import TyperGroup
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
+from typer.core import TyperGroup
 
 from skene_growth import __version__
 from skene_growth.cli.analysis_helpers import (
@@ -58,10 +58,12 @@ from skene_growth.cli.prompt_builder import (
 )
 from skene_growth.cli.sample_report import show_sample_report
 from skene_growth.config import default_model_for_provider, load_config, load_project_upstream, resolve_upstream_token
-from skene_growth.feature_registry import FEATURE_REGISTRY_FILENAME
 
 # Command order and groups for --help
-_COMMAND_ORDER = ["analyze", "plan", "build", "status", "push", "config", "validate", "login", "logout", "features", "init", "chat"]
+_COMMAND_ORDER = [
+    "analyze", "plan", "build", "status", "push", "config", "validate",
+    "login", "logout", "features", "init", "chat",
+]
 
 
 class SectionedHelpGroup(TyperGroup):
@@ -1193,9 +1195,11 @@ def push(
     loops_with_telemetry: list[dict[str, Any]] = []
     if not push_only:
         loops = load_existing_growth_loops(context)
-        loops_with_telemetry = [l for l in loops if extract_supabase_telemetry(l)]
+        loops_with_telemetry = [loop for loop in loops if extract_supabase_telemetry(loop)]
         if loop_id:
-            loops_with_telemetry = [l for l in loops_with_telemetry if l.get("loop_id") == loop_id]
+            loops_with_telemetry = [
+                loop for loop in loops_with_telemetry if loop.get("loop_id") == loop_id
+            ]
             if not loops_with_telemetry:
                 console.print(f"[red]No loop with loop_id '{loop_id}' has Supabase telemetry.[/red]")
                 raise typer.Exit(1)
@@ -1217,9 +1221,9 @@ def push(
             ctx = context or path / "skene-context"
             if (ctx / "growth-loops").is_dir():
                 loops_with_telemetry = [
-                    l
-                    for l in load_existing_growth_loops(ctx)
-                    if extract_supabase_telemetry(l)
+                    loop
+                    for loop in load_existing_growth_loops(ctx)
+                    if extract_supabase_telemetry(loop)
                 ]
 
         if resolved_upstream:
@@ -1258,7 +1262,11 @@ def push(
                         if loops_dir and loops_dir.exists()
                         else 0
                     )
-                    sent_parts = [f"growth-loops ({growth_loops_count} file{'s' if growth_loops_count != 1 else ''})", "telemetry.sql"]
+                    suffix = "s" if growth_loops_count != 1 else ""
+                    sent_parts = [
+                        f"growth-loops ({growth_loops_count} file{suffix})",
+                        "telemetry.sql",
+                    ]
                     console.print(
                         f"[green]Pushed to upstream[/green] commit_hash={result.get('commit_hash', '?')} "
                         f"(package: {', '.join(sent_parts)})"

@@ -158,7 +158,11 @@ def push_to_upstream(
         if resp.status_code == 201:
             return {"ok": True, **resp.json()}
         if resp.status_code in (401, 403):
-            return {"ok": False, "error": "auth", "message": "Upstream auth failed. Run skene login or set SKENE_UPSTREAM_API_KEY."}
+            return {
+                "ok": False,
+                "error": "auth",
+                "message": "Upstream auth failed. Run skene login or set SKENE_UPSTREAM_API_KEY.",
+            }
         if resp.status_code == 404:
             return {"ok": False, "error": "not_found", "message": "Upstream URL not found. Check the workspace URL."}
         return {"ok": False, "error": "server", "message": f"Upstream returned {resp.status_code}."}
