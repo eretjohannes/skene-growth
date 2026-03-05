@@ -1183,11 +1183,6 @@ def push(
         "--push-only",
         help="Re-push current output without regenerating",
     ),
-    commit_push: bool = typer.Option(
-        False,
-        "--commit-push",
-        help="Commit artifacts and push to git remote after push",
-    ),
 ):
     """
     Build a Supabase migration from growth loop telemetry into /supabase and push to upstream.
@@ -1205,7 +1200,6 @@ def push(
         skene push --upstream https://skene.ai/workspace/my-app
         skene push --loop skene_guard_activation_safety
         skene push --context ./skene-context
-        skene push --upstream https://skene.ai/workspace/my-app --commit-push
     """
     from skene_growth.growth_loops.push import (
         build_loops_to_supabase,

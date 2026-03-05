@@ -311,7 +311,6 @@ skene-growth push [PATH] [OPTIONS]
 | `--loop TEXT` | `-l` | | Push only this loop (by `loop_id`). If omitted, pushes all loops with Supabase telemetry. |
 | `--upstream TEXT` | `-u` | config or `.skene-upstream` | Upstream workspace URL (e.g. `https://skene.ai/workspace/my-app`). Resolved from `.skene-upstream`, config, or this flag. |
 | `--push-only` | | `false` | Re-push current output without regenerating migrations |
-| `--commit-push` | | `false` | Commit artifacts and push to git remote after deploy |
 
 ### Behavior notes
 

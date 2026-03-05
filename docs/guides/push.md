@@ -38,7 +38,6 @@ uvx skene-growth push --upstream https://skene.ai/workspace/my-app
 | `--loop TEXT` | `-l` | Push only this loop by `loop_id`. If omitted, pushes all loops with Supabase telemetry. |
 | `--upstream TEXT` | `-u` | Upstream workspace URL (e.g. `https://skene.ai/workspace/my-app`). Resolved from `.skene-upstream`, config, or this flag. |
 | `--push-only` | | Re-push current output without regenerating migrations |
-| `--commit-push` | | Commit artifacts and push to git remote after deploy |
 
 ## How it works
 

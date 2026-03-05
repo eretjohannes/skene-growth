@@ -28,7 +28,7 @@ skene-growth status [PATH]
 
 skene-growth push [PATH]
   Build Supabase migrations from growth loop telemetry and push to upstream.
-  Flags: -c/--context, -l/--loop, -u/--upstream, --push-only, --commit-push
+  Flags: -c/--context, -l/--loop, -u/--upstream, --push-only
 
 skene-growth login
   Log in to Skene Cloud upstream for push.
