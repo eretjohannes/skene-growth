@@ -78,10 +78,7 @@ def cmd_login(upstream_url: str | None = None) -> None:
         token = token.strip()
 
     config_path = save_upstream_to_config(url, workspace, token)
-    console.print(
-        f"[green]Logged in to [bold]{workspace}[/bold].[/green]\n"
-        f"  Config: {config_path}"
-    )
+    console.print(f"[green]Logged in to [bold]{workspace}[/bold].[/green]\n  Config: {config_path}")
 
 
 def cmd_logout() -> None:
