@@ -37,8 +37,8 @@ def _upstream_from_project_config() -> str | None:
                 val = data.get("upstream") or data.get("upstream_url")
                 if isinstance(val, str) and val.strip():
                     return val.strip()
-            except Exception:
-                pass
+            except Exception as exc:
+                console.print(f"[dim]Config read failed ({path}): {exc}[/dim]")
     return None
 
 
@@ -51,8 +51,8 @@ def _api_key_from_project_config() -> str | None:
                 val = data.get("upstream_api_key")
                 if isinstance(val, str) and val.strip():
                     return val.strip()
-            except Exception:
-                pass
+            except Exception as exc:
+                console.print(f"[dim]Config read failed ({path}): {exc}[/dim]")
     return None
 
 

@@ -8,6 +8,7 @@ Supports loading config from:
 Priority: CLI args > environment variables > project config > user config
 """
 
+import logging
 import os
 import sys
 from datetime import datetime, timezone
@@ -19,6 +20,7 @@ try:
 except ImportError:
     import tomli as tomllib  # type: ignore
 
+logger = logging.getLogger(__name__)
 
 DEFAULT_MODEL_BY_PROVIDER = {
     "openai": "gpt-4o",
@@ -156,8 +158,9 @@ def load_project_upstream() -> dict[str, Any] | None:
         data = load_toml(path)
         if data.get("upstream") and data.get("workspace"):
             return data
-    except Exception:
-        pass
+    except Exception as exc:
+        # Non-fatal: treat as no upstream configured
+        logger.debug("Failed to load upstream config from %s: %s", path, exc)
     return None
 
 
@@ -221,8 +224,9 @@ def save_workspace_token(workspace_slug: str, token: str) -> Path:
     if sys.platform != "win32":
         try:
             cred_path.chmod(0o600)
-        except (OSError, PermissionError):
-            pass
+        except (OSError, PermissionError) as exc:
+            # Best-effort: permission setting is non-fatal; file is still usable
+            print(f"[skene-growth] Could not chmod credentials file: {exc}", file=sys.stderr)
     return cred_path
 
 
@@ -268,8 +272,9 @@ def remove_workspace_token(workspace_slug: str) -> bool:
     if sys.platform != "win32":
         try:
             cred_path.chmod(0o600)
-        except (OSError, PermissionError):
-            pass
+        except (OSError, PermissionError) as exc:
+            # Best-effort: permission setting is non-fatal; token removal already succeeded
+            print(f"[skene-growth] Could not chmod credentials file: {exc}", file=sys.stderr)
     return True
 
 
@@ -333,8 +338,9 @@ def resolve_upstream_api_key_with_source(config: Config) -> tuple[str | None, st
             token = data.get("token") or data.get("upstream_api_key")
             if isinstance(token, str) and token.strip():
                 return token.strip(), "credentials"
-        except Exception:
-            pass
+        except Exception as exc:
+            # Ignore malformed credentials file, but log for debugging purposes.
+            print(f"Warning: failed to load upstream credentials from {cred_path}: {exc}", file=sys.stderr)
     return None, "-"
 
 
