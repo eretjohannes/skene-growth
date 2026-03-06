@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="Px8-fi/skene-cli"
+REPO="SkeneTechnologies/skene"
 BINARY="skene"
 INSTALL_DIR="/usr/local/bin"
 

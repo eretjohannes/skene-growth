@@ -3,7 +3,7 @@ package constants
 // Version and repository information
 var (
 	Version    = "v0.3.0"
-	Repository = "github.com/SkeneTechnologies/skene-cli"
+	Repository = "github.com/SkeneTechnologies/skene"
 )
 
 // URLs

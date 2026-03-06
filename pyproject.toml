@@ -50,7 +50,7 @@ skene-growth-mcp = "skene.cli.main:skene_growth_mcp_deprecated_entry"
 [project.urls]
 Homepage = "https://www.skene.ai"
 Documentation = "https://www.skene.ai/resources/docs/skene"
-Repository = "https://github.com/SkeneTechnologies/skene-growth"
+Repository = "https://github.com/SkeneTechnologies/skene"
 
 [build-system]
 requires = ["hatchling"]
